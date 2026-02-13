@@ -12,25 +12,19 @@
             font-family: 'Dancing Script', cursive; /* Handwriting-style font for all text */
             background: white; /* White background */
             color: #d32f2f; /* Red text */
-            overflow-x: hidden;
+            overflow: hidden; /* Prevent scrolling */
             position: relative;
             min-height: 100vh;
         }
 
-        /* Floating hearts animation (rising from bottom to top with random drift) */
+        /* Hearts animated via JS for sequential floating from bottom to top */
         .heart {
             position: absolute;
             font-size: 40px; /* Size set to 40px */
             color: #ff1744;
-            animation: floatUp 6s linear infinite; /* Rising animation */
             pointer-events: none;
-            --drift: 0px; /* Default drift, overridden by JS */
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(100vh) translateX(var(--drift)); opacity: 1; } /* Start from bottom with random horizontal drift */
-            50% { transform: translateY(50vh) translateX(calc(var(--drift) * 0.5)); opacity: 0.8; } /* Mid-point with reduced drift */
-            100% { transform: translateY(-100px) translateX(calc(var(--drift) * 0.2)); opacity: 0; } /* Float up and fade out at top with minimal drift */
+            will-change: transform, opacity; /* Optimize performance */
+            opacity: 0; /* Start invisible */
         }
 
         /* Page 1: Bouquet Image with greeting above */
@@ -42,6 +36,7 @@
             height: 100vh;
             text-align: center;
             position: relative;
+            z-index: 1; /* Ensure content is above hearts */
         }
 
         #greeting {
@@ -85,6 +80,7 @@
             justify-content: center;
             height: 100vh;
             padding: 20px;
+            z-index: 1; /* Ensure content is above hearts */
         }
 
         #letter {
@@ -115,7 +111,7 @@
     </style>
 </head>
 <body>
-    <!-- Floating Hearts (30 hearts, all moving with randomized positions, delays, durations, and drifts) -->
+    <!-- Floating Hearts (50 hearts, animated sequentially one by one from bottom to top via JS) -->
     <div class="heart">❤️</div>
     <div class="heart">❤️</div>
     <div class="heart">❤️</div>
@@ -146,7 +142,27 @@
     <div class="heart">❤️</div>
     <div class="heart">❤️</div>
     <div class="heart">❤️</div>
-
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
+    <div class="heart">❤️</div>
 
     <!-- Page 1 -->
     <div id="page1">
@@ -163,17 +179,39 @@
     </div>
 
     <script>
-        // Randomize heart positions, animation delays, durations, and horizontal drifts
+        // Sequential floating animation for hearts from bottom to top (one by one, slowly)
         const hearts = document.querySelectorAll('.heart');
-        hearts.forEach(heart => {
-            const randomLeft = Math.random() * 100; // Random horizontal position (0% to 100%)
-            const randomDelay = Math.random() * 10; // Random delay (0 to 10 seconds)
-            const randomDuration = 4 + Math.random() * 4; // Random duration (4 to 8 seconds) for varied speeds
-            const randomDrift = Math.random() * 40 - 20; // Random horizontal drift (-20px to 20px)
-            heart.style.left = `${randomLeft}%`;
-            heart.style.animationDelay = `${randomDelay}s`;
-            heart.style.animationDuration = `${randomDuration}s`;
-            heart.style.setProperty('--drift', `${randomDrift}px`);
+        hearts.forEach((heart, index) => {
+            setTimeout(() => {
+                let x = Math.random() * window.innerWidth; // Random horizontal start position
+                let y = window.innerHeight; // Start from bottom
+                let vx = (Math.random() - 0.5) * 0.5; // Very subtle random horizontal drift (-0.25 to 0.25)
+                let vy = -(Math.random() * 0.5 + 0.5); // Slower upward velocity (negative, -0.5 to -1 for gentle float)
+                let opacity = 1; // Start fully visible
+
+                const animate = () => {
+                    x += vx;
+                    y += vy;
+
+                    // Reset to bottom if off-screen (top)
+                    if (y < -50) {
+                        y = window.innerHeight;
+                        x = Math.random() * window.innerWidth;
+                        vy = -(Math.random() * 0.5 + 0.5); // New random slower upward speed
+                        vx = (Math.random() - 0.5) * 0.5; // New random subtle drift
+                    }
+
+                    // Fade out as they approach top
+                    opacity = Math.max(0, (y / window.innerHeight) * 1.2 - 0.2); // Fade based on position
+
+                    heart.style.transform = `translate(${x}px, ${y}px)`;
+                    heart.style.opacity = opacity;
+
+                    requestAnimationFrame(animate);
+                };
+
+                animate();
+            }, index * 500); // Stagger start by 500ms per heart (one by one)
         });
 
         const nextBtn = document.getElementById('nextBtn');
@@ -209,5 +247,4 @@ Padangat taka ❤️`;
         }
     </script>
 </body>
-
 </html>
